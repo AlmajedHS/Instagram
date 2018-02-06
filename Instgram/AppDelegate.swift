@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Parse
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,6 +17,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        Parse.initialize(
+            with: ParseClientConfiguration(block: { (configuration: ParseMutableClientConfiguration) -> Void in
+                configuration.applicationId = "Instgram"
+                configuration.clientKey = "helloworldwelcometocs490"  // set to nil assuming you have not set clientKey
+                configuration.server = "https://quiet-scrubland-28333.herokuapp.com/parse"
+            })
+        )
+        if let currentUser = PFUser.current() {
+            print("Welcome back \(currentUser.username!) 😀")
+
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let mainViewController = storyboard.instantiateViewController(withIdentifier: "MainViewController")
+            window?.rootViewController = mainViewController
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didLogout"), object: nil, queue: OperationQueue.main) { (Notification) in
+            
+            print("Logout notification received")
+            self.logOut()
+            
+        }
+        NotificationCenter.default.addObserver(forName: Notification.Name("goMain"), object: nil, queue: OperationQueue.main) { (Notification) in
+            
+            print("goMain notification received")
+            self.mainView()
+            
+        }
+        NotificationCenter.default.addObserver(forName: Notification.Name("goPost"), object: nil, queue: OperationQueue.main) { (Notification) in
+            
+            print("goPost notification received")
+            self.postView()
+            
+        }
         return true
     }
 
@@ -39,6 +73,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    }
+    
+    func logOut() {
+        // Logout the current user
+        PFUser.logOutInBackground(block: { (error) in
+            if let error = error {
+                print(error.localizedDescription)
+            } else {
+                print("Successful loggout")
+                // Load and show the login view controller
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let loginViewController = storyboard.instantiateViewController(withIdentifier: "Login1ViewController")
+                self.window?.rootViewController = loginViewController
+            }
+        })
+    }
+    
+    func mainView(){
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let mainViewController = storyboard.instantiateViewController(withIdentifier: "MainViewController")
+        self.window?.rootViewController = mainViewController
+        
+        
+    }
+    func postView(){
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let cameraViewController = storyboard.instantiateViewController(withIdentifier: "CameraViewController")
+        self.window?.rootViewController = cameraViewController
     }
 
 
